@@ -1,0 +1,2 @@
+- add test for empty fmt string for _fmtspec_collect().
+- add to every _fmtspec_collect test check for use_plus_sign == 0.

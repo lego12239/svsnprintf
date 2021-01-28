@@ -1,0 +1,25 @@
+Overview
+========
+
+Small and simple snprintf implementation without dynamic memory allocations.
+
+Syntax
+======
+
+int ssnprintf(char *str, size_t size, const char *fmt, ...);
+
+int svsnprintf(char *str, size_t size, const char *fmt, va_list ap);
+
+Where conversion specification can be:
+
+  flags: 0, -, +
+  length modifier: hh, h, l, ll
+  conversion specifier: d, i, o, u, x, X, b(binary form), f, c, s, p
+
+Architecture
+============
+
+The code is written for I32LP64 data model:
+- max unsigned long long int must exist(necessary for lib)
+- max unsigned long int must be (2^64 - 1)(necessary for tests)
+- max unsigned int must be (2^32 - 1)(necessary for tests)
