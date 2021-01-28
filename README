@@ -16,8 +16,15 @@ Where conversion specification can be:
   length modifier: hh, h, l, ll
   conversion specifier: d, i, o, u, x, X, b(binary form), f, c, s, p
 
-Architecture
-============
+Build
+=====
+
+Just:
+
+make
+
+Note
+====
 
 The code is written for I32LP64 data model:
 - max unsigned long long int must exist(necessary for lib)
