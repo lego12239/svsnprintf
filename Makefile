@@ -5,7 +5,7 @@ LDFLAGS =
 all: libsvsnprintf.a
 
 tests:: tests.c svsnprintf.c
-	gcc -o $@ $<
+	gcc -o $@ $< $(LDFLAGS)
 
 tests::
 	./tests
