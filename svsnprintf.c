@@ -97,7 +97,6 @@ static int conv_PERCENT(char **str, size_t *size, struct _fmtspec *fmtspec, va_l
  *  ... - values for fmt
  *
  * return:
- *  -2 - wrong conversion specifier
  *  >=0 - the length of resulting string (wihout \0)
  *
  * Place a formatted string in str buffer with maximum size of size.
