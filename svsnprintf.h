@@ -13,7 +13,6 @@
  *    d, i, o, u, x, X, b(binary form), f, c, s, p
  *
  * return:
- *  -1 - str is NULL, but size not
  *  -2 - wrong conversion specifier
  *  >=0 - the length of resulting string (wihout \0)
  */

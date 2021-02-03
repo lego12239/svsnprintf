@@ -108,8 +108,9 @@ svsnprintf(char *str, size_t size, const char *fmt, va_list ap)
 	unsigned int len, total = 0;
 	struct _fmtspec fmtspec = FMTSPEC_INITIAL;
 
-	if ((size != 0) && (!str))
-		return -1;
+	/* Treat str = NULL like a size = 0. */
+	if (!str)
+		size = 0;
 	/* Set str to NULL to differentiate between initial size=0 and
 	 * size=0 due to buf end.
 	 */

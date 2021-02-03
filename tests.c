@@ -743,6 +743,62 @@ test1_0(void)
 }
 
 int
+test1_0_1(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 10, "");
+	if (ret != 0)
+		TERR("ret must be 0 instead of %d", ret);
+	if (strcmp(buf, "") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 1; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test1_0_2(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(NULL, 10, "");
+	if (ret != 0)
+		TERR("ret must be 0 instead of %d", ret);
+	for(i = 0; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test1_0_3(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(NULL, 10, "some text");
+	if (ret != 9)
+		TERR("ret must be 9 instead of %d", ret);
+	for(i = 0; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
 test1_1(void)
 {
 	int ret, i;
@@ -3910,6 +3966,9 @@ struct test tests[] = {
 	{test0_17, "_fmtspec_collect() with %b"},
 	{test0_18, "_fmtspec_collect() with %p"},
 	{test1_0, "svsnprintf() with empty string (size=0)"},
+	{test1_0_1, "svsnprintf() with empty string"},
+	{test1_0_2, "svsnprintf() with empty string(str=NULL)"},
+	{test1_0_3, "svsnprintf() with some text(str=NULL)"},
 	{test1_1, "svsnprintf() without spec (size=0)"},
 	{test1_2, "svsnprintf() with single % (size=0)"},
 	{test1_3, "svsnprintf() with %% (size=0)"},
