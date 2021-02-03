@@ -4241,9 +4241,9 @@ main(int argc, char **argv)
 		total++;
 
 	for(i = 0, cnt = 0; tests[i].test; i++) {
-		printf("%s:%s... ", argv[0], tests[i].title);
+		fprintf(stderr, "%s:%s... ", argv[0], tests[i].title);
 		ret = tests[i].test();
-		printf("%s\n", ret ? "ok" : "fail");
+		fprintf(stderr, "%s\n", ret ? "ok" : "fail");
 		if (ret)
 			cnt++;
 	}
