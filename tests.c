@@ -837,6 +837,64 @@ test1_0_5(void)
 }
 
 int
+test1_0_6(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 0, "some %s text", NULL);
+	if (ret != 16)
+		TERR("ret must be 16 instead of %d", ret);
+	for(i = 0; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test1_0_7(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 8, "some %s text", NULL);
+	if (ret != 16)
+		TERR("ret must be 16 instead of %d", ret);
+	if (strcmp(buf, "some (n") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 8; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test1_0_8(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 20, "some %s text", NULL);
+	if (ret != 16)
+		TERR("ret must be 16 instead of %d", ret);
+	if (strcmp(buf, "some (null) text") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 17; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
 test1_1(void)
 {
 	int ret, i;
@@ -4009,6 +4067,9 @@ struct test tests[] = {
 	{test1_0_3, "svsnprintf() with some text(str=NULL)"},
 	{test1_0_4, "svsnprintf() with NULL fmt(size = 0)"},
 	{test1_0_5, "svsnprintf() with NULL fmt"},
+	{test1_0_6, "svsnprintf() with some text(size = 0, with NULL)"},
+	{test1_0_7, "svsnprintf() with some text(size = 8, with NULL)"},
+	{test1_0_8, "svsnprintf() with some text(with NULL)"},
 	{test1_1, "svsnprintf() without spec (size=0)"},
 	{test1_2, "svsnprintf() with single % (size=0)"},
 	{test1_3, "svsnprintf() with %% (size=0)"},

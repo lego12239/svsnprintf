@@ -706,6 +706,8 @@ conv_str(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	char *buf, *ptr;
 
 	buf = va_arg(ap, void*);
+	if (!buf)
+		buf = "(null)";
 	maxlen = fmtspec->precision;
 
 	/* calculate a length of a string */
