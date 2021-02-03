@@ -149,6 +149,9 @@ svsnprintf(char *str, size_t size, const char *fmt, va_list ap)
 	else
 		size--; /* save a space for \0 */
 
+	if (fmt == NULL)
+		goto end;
+
 	while (*fmt != '\0') {
 //		printf("'%c'", *fmt);
 		if (*fmt == '%') {
@@ -183,6 +186,7 @@ svsnprintf(char *str, size_t size, const char *fmt, va_list ap)
 		}
 	}
 
+end:
 	if (str)
 		*str = '\0';
 	return total;
