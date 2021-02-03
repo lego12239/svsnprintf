@@ -72,8 +72,8 @@ test0_2(void)
 	struct _fmtspec fmtspec = FMTSPEC_INITIAL;
 
 	ret = _fmtspec_collect("%N", &fmtspec);
-	if (ret != 1)
-		TERR("ret must be 1 instead of %d", ret);
+	if (ret != 2)
+		TERR("ret must be 2 instead of %d", ret);
 	if (fmtspec.pad_type != pad_with_space)
 		TERR("pad_type must be %d instead of %d",
 		  pad_with_space, fmtspec.pad_type);
@@ -98,6 +98,32 @@ test0_2_1(void)
 	struct _fmtspec fmtspec = FMTSPEC_INITIAL;
 
 	ret = _fmtspec_collect("% n", &fmtspec);
+	if (ret != 3)
+		TERR("ret must be 3 instead of %d", ret);
+	if (fmtspec.pad_type != pad_with_space)
+		TERR("pad_type must be %d instead of %d",
+		  pad_with_space, fmtspec.pad_type);
+	if (fmtspec.width != 0)
+		TERR("width must be 0 instead of %d", fmtspec.width);
+	if (fmtspec.precision != -1)
+		TERR("precision must be -1 instead of %d", fmtspec.precision);
+	if (fmtspec.len_mod != len_mod_none)
+		TERR("len_mod must be %d instead of %d",
+		  len_mod_none, fmtspec.len_mod);
+	if (fmtspec.conv_fun != NULL)
+		TERR("conv_spec must be NULL instead of %p",
+		  fmtspec.conv_fun);
+
+	return 1;
+}
+
+int
+test0_2_2(void)
+{
+	int ret;
+	struct _fmtspec fmtspec = FMTSPEC_INITIAL;
+
+	ret = _fmtspec_collect("% ", &fmtspec);
 	if (ret != 2)
 		TERR("ret must be 2 instead of %d", ret);
 	if (fmtspec.pad_type != pad_with_space)
@@ -921,9 +947,29 @@ test1_2(void)
 	for(i = 0; i < 1024; i++)
 		buf[i] = 1;
 	ret = ssnprintf(buf, 0, "%");
-	if (ret != 1)
-		TERR("ret must be 1 instead of %d", ret);
+	if (ret != 10)
+		TERR("ret must be 10 instead of %d", ret);
 	for(i = 0; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test1_2_1(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 20, "%");
+	if (ret != 10)
+		TERR("ret must be 10 instead of %d", ret);
+	if (strcmp(buf, "%<-ERRSPEC") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 11; i < 1024; i++)
 		if (buf[i] != 1)
 			TERR("buf[%d] is %d", i, buf[i]);
 
@@ -4023,14 +4069,139 @@ test10_1(void)
 }
 
 int
-test1_2a(void)
+test11_0(void)
 {
-	int ret;
+	int ret, i;
 	char buf[1024];
 
-	ret = ssnprintf(buf, 0, "test % This");
-	if (ret != 1)
-		TERR("ret must be 1 instead of %d", ret);
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 0, "wrong % Spec", NULL);
+	if (ret != 18)
+		TERR("ret must be 18 instead of %d", ret);
+	for(i = 0; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test11_1(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 9, "wrong % Spec", NULL);
+	if (ret != 18)
+		TERR("ret must be 18 instead of %d", ret);
+	if (strcmp(buf, "wrong % ") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 9; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test11_2(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 10, "wrong % Spec", NULL);
+	if (ret != 18)
+		TERR("ret must be 18 instead of %d", ret);
+	if (strcmp(buf, "wrong % S") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 10; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test11_3(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 11, "wrong % Spec", NULL);
+	if (ret != 18)
+		TERR("ret must be 18 instead of %d", ret);
+	if (strcmp(buf, "wrong % S<") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 11; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test11_4(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 18, "wrong % Spec", NULL);
+	if (ret != 18)
+		TERR("ret must be 18 instead of %d", ret);
+	if (strcmp(buf, "wrong % S<-ERRSPE") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 18; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test11_5(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 19, "wrong % Spec", NULL);
+	if (ret != 18)
+		TERR("ret must be 18 instead of %d", ret);
+	if (strcmp(buf, "wrong % S<-ERRSPEC") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 19; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test11_6(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 20, "wrong % Spec", NULL);
+	if (ret != 18)
+		TERR("ret must be 18 instead of %d", ret);
+	if (strcmp(buf, "wrong % S<-ERRSPEC") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 19; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
 
 	return 1;
 }
@@ -4041,6 +4212,7 @@ struct test tests[] = {
 	{test0_1, "_fmtspec_collect() with %%"},
 	{test0_2, "_fmtspec_collect() with wrong spec"},
 	{test0_2_1, "_fmtspec_collect() with wrong spec(% )"},
+	{test0_2_2, "_fmtspec_collect() with wrong spec(% )"},
 	{test0_3, "_fmtspec_collect() with %d"},
 	{test0_3_1, "_fmtspec_collect() with %hhd"},
 	{test0_3_2, "_fmtspec_collect() with %hd"},
@@ -4072,6 +4244,7 @@ struct test tests[] = {
 	{test1_0_8, "svsnprintf() with some text(with NULL)"},
 	{test1_1, "svsnprintf() without spec (size=0)"},
 	{test1_2, "svsnprintf() with single % (size=0)"},
+	{test1_2_1, "svsnprintf() with single %"},
 	{test1_3, "svsnprintf() with %% (size=0)"},
 	{test1_3_1, "svsnprintf() with %% (size=0)"},
 	{test1_3_2, "svsnprintf() with %% (size=0)"},
@@ -4228,7 +4401,13 @@ struct test tests[] = {
 	{test9_6_10, "svsnprintf() with %-4.2s(size=9)"},
 	{test9_6_11, "svsnprintf() with %-4.2s(size=10)"},
 	{test10_1, "svsnprintf() with %p"},
-//	{test1_2, "svsnprintf() with wrong spec (size=0)"},
+	{test11_0, "svsnprintf() with wrong spec (size=0)"},
+	{test11_1, "svsnprintf() with wrong spec (size=9)"},
+	{test11_2, "svsnprintf() with wrong spec (size=10)"},
+	{test11_3, "svsnprintf() with wrong spec (size=11)"},
+	{test11_4, "svsnprintf() with wrong spec (size=18)"},
+	{test11_5, "svsnprintf() with wrong spec (size=19)"},
+	{test11_6, "svsnprintf() with wrong spec"},
 	TEST_NULL
 };
 

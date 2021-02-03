@@ -111,10 +111,13 @@ static int conv_PERCENT(char **str, size_t *size, struct _fmtspec *fmtspec, va_l
  *  conversion specifier:
  *    d, i, o, u, x, X, b(binary form), f, c, s, p
  *
- * If str or/and size is 0, then no data is written to a destination buffer; only
- * needed buffer length(without the terminating \0 byte) is returned.
+ * If str or/and size is 0, then no data is written to a destination buffer;
+ * only needed buffer length(without the terminating \0 byte) is returned.
  * If fmt is NULL, then \0 byte is written to a destination buffer(if there is
  * space for it according to a size value) and 0 is returned.
+ * If unknown conversion specifier is found, then it is written to a destination
+ * buffer with postfix "<-ERRSPEC" and no further processing is done to prevent
+ * a memory error by misinterpretation of function arguments.
  */
 int
 ssnprintf(char *str, size_t size, const char *fmt, ...)
@@ -155,9 +158,9 @@ svsnprintf(char *str, size_t size, const char *fmt, va_list ap)
 			len = _fmtspec_collect(fmt, &fmtspec);
 //			printf("[%d]", len);
 			if (!fmtspec.conv_fun) {
+				char *__str = "<-ERRSPEC";
 				total += len;
 				for (; len; len--) {
-					//_STR_ADD(str, size, *fmt);
 					if (size) {
 						*str = *fmt;
 						str++;
@@ -165,6 +168,17 @@ svsnprintf(char *str, size_t size, const char *fmt, va_list ap)
 					}
 					fmt++;
 				}
+				len = 9;
+				total += len;
+				for (; len; len--) {
+					if (size) {
+						*str = *__str;
+						str++;
+						size--;
+					}
+					__str++;
+				}
+				goto end;
 			} else {
 				fmt += len;
 				len = fmtspec.conv_fun(&str, &size, &fmtspec, ap);
@@ -330,7 +344,7 @@ _fmtspec_collect(const char *fmt, struct _fmtspec *fmtspec)
 				break;
 			default:
 				state = 7;
-				fmt--;
+//				fmt--;
 				break;
 			}
 			if (state != 7)
