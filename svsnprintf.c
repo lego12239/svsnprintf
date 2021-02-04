@@ -218,6 +218,7 @@ _fmtspec_collect(const char *fmt, struct _fmtspec *fmtspec)
 	int state = 0;
 
 	/* Error! Shouldn't happend */
+	assert(fmt != NULL);
 	assert(*fmt != '\0');
 	fmt++;
 	while ((*fmt != '\0') && (state < 6)) {
