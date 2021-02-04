@@ -66,6 +66,7 @@ enum conv_spec {
 	conv_spec_PERCENT
 };
 
+/* See _fmtspec_init() */
 #define FMTSPEC_INITIAL {1, 0, 0, 0, 0, -1, 0, 1, NULL}
 
 struct _fmtspec {
@@ -202,6 +203,20 @@ end:
 	return total;
 }
 
+static void
+_fmtspec_init(struct _fmtspec *fmtspec)
+{
+	fmtspec->pad_type = 1;
+	fmtspec->alternate_form = 0;
+	fmtspec->left_adjust = 0;
+	fmtspec->use_plus_sign = 0;
+	fmtspec->width = 0;
+	fmtspec->precision = -1;
+	fmtspec->len_mod = 0;
+	fmtspec->conv_spec = 1;
+	fmtspec->conv_fun = NULL;
+}
+
 static unsigned int
 _fmtspec_collect(const char *fmt, struct _fmtspec *fmtspec)
 {
@@ -221,6 +236,7 @@ _fmtspec_collect(const char *fmt, struct _fmtspec *fmtspec)
 	assert(fmt != NULL);
 	assert(*fmt != '\0');
 	fmt++;
+	_fmtspec_init(fmtspec);
 	while ((*fmt != '\0') && (state < 6)) {
 //		printf("state %d '%c'\n", state, *fmt);
 		switch (state) {

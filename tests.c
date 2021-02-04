@@ -1545,6 +1545,26 @@ test2_20_1(void)
 }
 
 int
+test2_20_2(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 100, "some%04d-%02d-%02dword", 2021, 01, 01);
+	if (ret != 18)
+		TERR("ret must be 18 instead of %d", ret);
+	if (strcmp(buf, "some2021-01-01word") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 19; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
 test2_21(void)
 {
 	int ret, i;
@@ -4317,6 +4337,7 @@ struct test tests[] = {
 	{test2_19, "svsnprintf() with %lld"},
 	{test2_20, "svsnprintf() with %04hhd"},
 	{test2_20_1, "svsnprintf() with %04hhd(<0)"},
+	{test2_20_2, "svsnprintf() with %04d-%02d-%02d"},
 	{test2_21, "svsnprintf() with %.4hhd"},
 	{test2_21_1, "svsnprintf() with %.4hhd(<0)"},
 	{test2_22, "svsnprintf() with %05.4hhd"},
