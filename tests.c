@@ -4206,6 +4206,49 @@ test11_6(void)
 	return 1;
 }
 
+int
+test12(void)
+{
+	int ret, i, len;
+	char buf[1024], *pos;
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	pos = buf;
+	len = 10;
+	ret = ssnprintf(pos, len, "test");
+	if (ret != 4)
+		TERR("ret must be 4 instead of %d", ret);
+	pos += ret;
+	len -= (ret < len) ? ret : len;
+
+	ret = ssnprintf(pos, len, "test");
+	if (ret != 4)
+		TERR("ret must be 4 instead of %d", ret);
+	pos += ret;
+	len -= (ret < len) ? ret : len;
+
+	ret = ssnprintf(pos, len, "test");
+	if (ret != 4)
+		TERR("ret must be 4 instead of %d", ret);
+	pos += ret;
+	len -= (ret < len) ? ret : len;
+
+	ret = ssnprintf(pos, len, "test");
+	if (ret != 4)
+		TERR("ret must be 4 instead of %d", ret);
+	pos += ret;
+	len -= (ret < len) ? ret : len;
+
+	if (strcmp(buf, "testtestt") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 10; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
 
 struct test tests[] = {
 	{test0_0, "_fmtspec_collect() with single %"},
@@ -4408,6 +4451,7 @@ struct test tests[] = {
 	{test11_4, "svsnprintf() with wrong spec (size=18)"},
 	{test11_5, "svsnprintf() with wrong spec (size=19)"},
 	{test11_6, "svsnprintf() with wrong spec"},
+	{test12, "fill a buffer"},
 	TEST_NULL
 };
 

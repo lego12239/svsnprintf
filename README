@@ -23,6 +23,31 @@ Just:
 
 make
 
+Examples
+========
+
+Fill a buffer with a data:
+
+int fill_buf(char **data, char *buf, int buf_size)
+{
+	int n, rem;
+	char *pos;
+
+	rem = buf_size;
+	pos = buf;
+
+	for(int i = 0; data[i]; i++) {
+		n = ssprintf(pos, rem, "data: %s\n", data[i]);
+		pos += n;
+		rem -= (n < rem) ? n : rem;
+	}
+
+	/* If a buffer is completely filled, then data length is buf_size - 1 */
+	if (rem == 0)
+		rem++;
+	return buf_size - rem;
+}
+
 Note
 ====
 
