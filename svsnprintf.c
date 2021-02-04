@@ -53,7 +53,8 @@ enum len_mod {
 };
 
 enum conv_spec {
-	conv_spec_d = 1,
+	conv_spec_none = 0,
+	conv_spec_d,
 	conv_spec_o,
 	conv_spec_u,
 	conv_spec_x,
@@ -67,7 +68,7 @@ enum conv_spec {
 };
 
 /* See _fmtspec_init() */
-#define FMTSPEC_INITIAL {1, 0, 0, 0, 0, -1, 0, 1, NULL}
+#define FMTSPEC_INITIAL {1, 0, 0, 0, 0, -1, 0, 0, NULL}
 
 struct _fmtspec {
 	enum pad_type pad_type;
@@ -157,7 +158,7 @@ svsnprintf(char *str, size_t size, const char *fmt, va_list ap)
 		if (*fmt == '%') {
 			len = _fmtspec_collect(fmt, &fmtspec);
 //			printf("[%d]", len);
-			if (!fmtspec.conv_fun) {
+			if (fmtspec.conv_spec == conv_spec_none) {
 				char *__str = "<-ERRSPEC";
 				total += len;
 				for (; len; len--) {
@@ -213,7 +214,7 @@ _fmtspec_init(struct _fmtspec *fmtspec)
 	fmtspec->width = 0;
 	fmtspec->precision = -1;
 	fmtspec->len_mod = 0;
-	fmtspec->conv_spec = 1;
+	fmtspec->conv_spec = 0;
 	fmtspec->conv_fun = NULL;
 }
 
