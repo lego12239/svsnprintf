@@ -13,6 +13,7 @@ int svsnprintf(char *str, size_t size, const char *fmt, va_list ap);
 Where conversion specification can be:
 
   flags: 0, -, +
+  width: NUMBER or *
   length modifier: hh, h, l, ll
   conversion specifier: d, i, o, u, x, X, b(binary form), f, c, s, p
 

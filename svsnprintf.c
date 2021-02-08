@@ -34,6 +34,9 @@
 #include <stdarg.h>
 #include <stddef.h>
 
+#define WIDTH_ASTERISK -2
+#define PRECISION_ASTERISK -2
+
 enum pad_type {
 	pad_with_space = 1,
 	pad_with_zero
@@ -75,8 +78,8 @@ struct _fmtspec {
 	unsigned int alternate_form;
 	unsigned int left_adjust;
 	unsigned int use_plus_sign;
-	unsigned int width;
-	int precision;
+	int width;  /* -2 - for * */
+	int precision;  /* -2 - for * */
 	enum len_mod len_mod;
 	enum conv_spec conv_spec;
 	int (*conv_fun)(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap);
@@ -102,11 +105,14 @@ static int conv_PERCENT(char **str, size_t *size, struct _fmtspec *fmtspec, va_l
  *  >=0 - the length of resulting string (wihout \0)
  *
  * Place a formatted string in str buffer with maximum size of size.
- * Conversion specification: %FL.PC. Where F - flags(optional),
- * L - length(optional), P - precision(optional), C - conversion.
+ * Conversion specification: %FW.PLC. Where F - flags(optional),
+ * W - width(optional), P - precision(optional), L - length(optional),
+ * C - conversion.
  * Supported conversion specifications:
  *  flags:
  *    0, -, +
+ *  width:
+ *    NUMBER or *
  *  length modifier:
  *    hh, h, l, ll
  *  conversion specifier:
@@ -223,13 +229,14 @@ _fmtspec_collect(const char *fmt, struct _fmtspec *fmtspec)
 {
 	const char *start = fmt;
 	/* 0 - flag
-	 * 1 - width
-	 * 2 - precision marker
-	 * 3 - precision
-	 * 4 - length modifier
-	 * 5 - conversion specifier
-	 * 6 - happy end
-	 * 7 - unknown conversion specification
+	 * 1 - width start(may be *)
+	 * 2 - width
+	 * 3 - precision marker
+	 * 4 - precision
+	 * 5 - length modifier
+	 * 6 - conversion specifier
+	 * 7 - happy end
+	 * 8 - unknown conversion specification
 	 */
 	int state = 0;
 
@@ -238,7 +245,7 @@ _fmtspec_collect(const char *fmt, struct _fmtspec *fmtspec)
 	assert(*fmt != '\0');
 	fmt++;
 	_fmtspec_init(fmtspec);
-	while ((*fmt != '\0') && (state < 6)) {
+	while ((*fmt != '\0') && (state < 7)) {
 //		printf("state %d '%c'\n", state, *fmt);
 		switch (state) {
 		case 0:
@@ -266,31 +273,43 @@ _fmtspec_collect(const char *fmt, struct _fmtspec *fmtspec)
 			}
 			break;
 		case 1:
-			if ((*fmt < '0') || (*fmt > '9')) {
+			if (*fmt == '*') {
+				fmtspec->width = WIDTH_ASTERISK;
+				state = 3;
+			} else if ((*fmt >= '0') && (*fmt <= '9')) {
+				fmtspec->width = *fmt - '0';
 				state = 2;
+			} else {
+				fmt--;
+				state = 3;
+			}
+			break;
+		case 2:
+			if ((*fmt < '0') || (*fmt > '9')) {
+				state = 3;
 				fmt--;
 				break;
 			}
 			fmtspec->width = fmtspec->width * 10 + (*fmt - '0');
 			break;
-		case 2:
+		case 3:
 			if (*fmt == '.') {
 				fmtspec->precision = 0;
-				state = 3;
+				state = 4;
 			} else {
 				fmt--;
-				state = 4;
+				state = 5;
 			}
 			break;
-		case 3:
+		case 4:
 			if ((*fmt < '0') || (*fmt > '9')) {
-				state = 4;
+				state = 5;
 				fmt--;
 				break;
 			}
 			fmtspec->precision = fmtspec->precision * 10 + (*fmt - '0');
 			break;
-		case 4:
+		case 5:
 //			printf("state 4 %c\n", *fmt);
 			switch (*fmt) {
 			case 'h':
@@ -306,12 +325,12 @@ _fmtspec_collect(const char *fmt, struct _fmtspec *fmtspec)
 			case 't':
 				break;
 			default:
-				state = 5;
+				state = 6;
 				fmt--;
 				break;
 			}
 			break;
-		case 5:
+		case 6:
 //			printf("state 5 %c\n", *fmt);
 			switch (*fmt) {
 			case 'd':
@@ -360,12 +379,12 @@ _fmtspec_collect(const char *fmt, struct _fmtspec *fmtspec)
 				fmtspec->conv_fun = conv_PERCENT;
 				break;
 			default:
-				state = 7;
+				state = 8;
 //				fmt--;
 				break;
 			}
-			if (state != 7)
-				state = 6;
+			if (state != 8)
+				state = 7;
 			break;
 		}
 		fmt++;
@@ -383,6 +402,9 @@ conv_int(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	long long int _num;
 	unsigned long long int num, num_copy;
 	char pad_c;
+
+	if (fmtspec->width == WIDTH_ASTERISK)
+		fmtspec->width = va_arg(ap, int);
 
 	switch (fmtspec->conv_spec) {
 	case conv_spec_d:
@@ -582,6 +604,9 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	double num;
 	char pad_c;
 
+	if (fmtspec->width == WIDTH_ASTERISK)
+		fmtspec->width = va_arg(ap, int);
+
 	/* separate a number to integer and fractional parts */
 	num = (double)va_arg(ap, double);
 	if (num < 0) {
@@ -735,6 +760,9 @@ conv_str(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 {
 	int len = 0, maxlen, i, str_len, wpad_len;
 	char *buf, *ptr;
+
+	if (fmtspec->width == WIDTH_ASTERISK)
+		fmtspec->width = va_arg(ap, int);
 
 	buf = va_arg(ap, void*);
 	if (!buf)

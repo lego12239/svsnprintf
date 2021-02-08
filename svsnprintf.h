@@ -12,11 +12,13 @@
  *  >=0 - the length of resulting string (wihout \0)
  *
  * Place a formatted string in str buffer with maximum size of size.
- * Conversion specification: %FL.PC. Where F - flags(optional),
- * L - length(optional), P - precision(optional), C - conversion.
+ * Conversion specification: %FW.PLC. Where F - flags(optional),
+ * W - width(optional), P - precision(optional), L - length(optional), C - conversion.
  * Supported conversion specifications:
  *  flags:
  *    0, -, +
+ *  width:
+ *    NUMBER or *
  *  length modifier:
  *    hh, h, l, ll
  *  conversion specifier:
