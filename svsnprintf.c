@@ -31,6 +31,9 @@
  */
 
 #include <assert.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 #include <stdarg.h>
 #include <stddef.h>
 
@@ -417,6 +420,7 @@ conv_int(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	long long int _num;
 	unsigned long long int num, num_copy;
 	char pad_c;
+	char *__str;
 
 	if (fmtspec->width == WIDTH_ASTERISK)
 		fmtspec->width = va_arg(ap, int);
@@ -448,8 +452,9 @@ conv_int(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 		conv = "0123456789ABCDEF";
 		break;
 	default:
-		char *__str = "conv_int: wrong fmtspec->conv_spec ";
-		write(2, __str, 35);
+		__str = "conv_int: wrong fmtspec->conv_spec\n";
+//		write(2, __str, 35);
+		write(2, __str, strlen(__str));
 		exit(1);
 	}
 
