@@ -14,6 +14,7 @@ Where conversion specification can be:
 
   flags: 0, -, +
   width: NUMBER or *
+  precision: NUMBER or *
   length modifier: hh, h, l, ll
   conversion specifier: d, i, o, u, x, X, b(binary form), f, c, s, p
 

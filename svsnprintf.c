@@ -113,6 +113,8 @@ static int conv_PERCENT(char **str, size_t *size, struct _fmtspec *fmtspec, va_l
  *    0, -, +
  *  width:
  *    NUMBER or *
+ *  precision:
+ *    NUMBER or *
  *  length modifier:
  *    hh, h, l, ll
  *  conversion specifier:
@@ -232,11 +234,12 @@ _fmtspec_collect(const char *fmt, struct _fmtspec *fmtspec)
 	 * 1 - width start(may be *)
 	 * 2 - width
 	 * 3 - precision marker
-	 * 4 - precision
-	 * 5 - length modifier
-	 * 6 - conversion specifier
-	 * 7 - happy end
-	 * 8 - unknown conversion specification
+	 * 4 - precision start(may be *)
+	 * 5 - precision
+	 * 6 - length modifier
+	 * 7 - conversion specifier
+	 * 8 - happy end
+	 * 9 - unknown conversion specification
 	 */
 	int state = 0;
 
@@ -245,8 +248,8 @@ _fmtspec_collect(const char *fmt, struct _fmtspec *fmtspec)
 	assert(*fmt != '\0');
 	fmt++;
 	_fmtspec_init(fmtspec);
-	while ((*fmt != '\0') && (state < 7)) {
-//		printf("state %d '%c'\n", state, *fmt);
+	while ((*fmt != '\0') && (state < 8)) {
+//		fprintf(stderr, "state %d '%c'\n", state, *fmt);
 		switch (state) {
 		case 0:
 			switch (*fmt) {
@@ -298,19 +301,31 @@ _fmtspec_collect(const char *fmt, struct _fmtspec *fmtspec)
 				state = 4;
 			} else {
 				fmt--;
-				state = 5;
+				state = 6;
 			}
 			break;
 		case 4:
-			if ((*fmt < '0') || (*fmt > '9')) {
+			if (*fmt == '*') {
+				fmtspec->precision = PRECISION_ASTERISK;
+				state = 6;
+			} else if ((*fmt >= '0') && (*fmt <= '9')) {
+				fmtspec->precision = *fmt - '0';
 				state = 5;
+			} else {
+				fmt--;
+				state = 6;
+			}
+			break;
+		case 5:
+			if ((*fmt < '0') || (*fmt > '9')) {
+				state = 6;
 				fmt--;
 				break;
 			}
 			fmtspec->precision = fmtspec->precision * 10 + (*fmt - '0');
 			break;
-		case 5:
-//			printf("state 4 %c\n", *fmt);
+		case 6:
+//			printf("state 6 %c\n", *fmt);
 			switch (*fmt) {
 			case 'h':
 				fmtspec->len_mod = (fmtspec->len_mod << 4) + len_mod_h;
@@ -325,13 +340,13 @@ _fmtspec_collect(const char *fmt, struct _fmtspec *fmtspec)
 			case 't':
 				break;
 			default:
-				state = 6;
+				state = 7;
 				fmt--;
 				break;
 			}
 			break;
-		case 6:
-//			printf("state 5 %c\n", *fmt);
+		case 7:
+//			printf("state 7 %c\n", *fmt);
 			switch (*fmt) {
 			case 'd':
 			case 'i':
@@ -379,12 +394,12 @@ _fmtspec_collect(const char *fmt, struct _fmtspec *fmtspec)
 				fmtspec->conv_fun = conv_PERCENT;
 				break;
 			default:
-				state = 8;
+				state = 9;
 //				fmt--;
 				break;
 			}
-			if (state != 8)
-				state = 7;
+			if (state != 9)
+				state = 8;
 			break;
 		}
 		fmt++;
@@ -405,6 +420,8 @@ conv_int(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 
 	if (fmtspec->width == WIDTH_ASTERISK)
 		fmtspec->width = va_arg(ap, int);
+	if (fmtspec->precision == PRECISION_ASTERISK)
+		fmtspec->precision = va_arg(ap, int);
 
 	switch (fmtspec->conv_spec) {
 	case conv_spec_d:
@@ -606,6 +623,8 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 
 	if (fmtspec->width == WIDTH_ASTERISK)
 		fmtspec->width = va_arg(ap, int);
+	if (fmtspec->precision == PRECISION_ASTERISK)
+		fmtspec->precision = va_arg(ap, int);
 
 	/* separate a number to integer and fractional parts */
 	num = (double)va_arg(ap, double);
@@ -763,6 +782,8 @@ conv_str(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 
 	if (fmtspec->width == WIDTH_ASTERISK)
 		fmtspec->width = va_arg(ap, int);
+	if (fmtspec->precision == PRECISION_ASTERISK)
+		fmtspec->precision = va_arg(ap, int);
 
 	buf = va_arg(ap, void*);
 	if (!buf)

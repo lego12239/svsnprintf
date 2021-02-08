@@ -19,6 +19,8 @@
  *    0, -, +
  *  width:
  *    NUMBER or *
+ *  precision:
+ *    NUMBER or *
  *  length modifier:
  *    hh, h, l, ll
  *  conversion specifier:
