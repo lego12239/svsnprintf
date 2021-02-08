@@ -448,7 +448,9 @@ conv_int(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 		conv = "0123456789ABCDEF";
 		break;
 	default:
-		return -2;
+		char *__str = "conv_int: wrong fmtspec->conv_spec ";
+		write(2, __str, 35);
+		exit(1);
 	}
 
 	switch (fmtspec->conv_spec) {
