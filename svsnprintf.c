@@ -422,10 +422,16 @@ conv_int(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	char pad_c;
 	char *__str;
 
-	if (fmtspec->width == WIDTH_ASTERISK)
+	if (fmtspec->width == WIDTH_ASTERISK) {
 		fmtspec->width = va_arg(ap, int);
-	if (fmtspec->precision == PRECISION_ASTERISK)
+		if (fmtspec->width < 0)
+			fmtspec->width = -fmtspec->width;
+	}
+	if (fmtspec->precision == PRECISION_ASTERISK) {
 		fmtspec->precision = va_arg(ap, int);
+		if (fmtspec->precision < 0)
+			fmtspec->precision = -fmtspec->precision;
+	}
 
 	switch (fmtspec->conv_spec) {
 	case conv_spec_d:
@@ -628,10 +634,16 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	double num;
 	char pad_c;
 
-	if (fmtspec->width == WIDTH_ASTERISK)
+	if (fmtspec->width == WIDTH_ASTERISK) {
 		fmtspec->width = va_arg(ap, int);
-	if (fmtspec->precision == PRECISION_ASTERISK)
+		if (fmtspec->width < 0)
+			fmtspec->width = -fmtspec->width;
+	}
+	if (fmtspec->precision == PRECISION_ASTERISK) {
 		fmtspec->precision = va_arg(ap, int);
+		if (fmtspec->precision < 0)
+			fmtspec->precision = -fmtspec->precision;
+	}
 
 	/* separate a number to integer and fractional parts */
 	num = (double)va_arg(ap, double);
@@ -787,10 +799,16 @@ conv_str(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	int len = 0, maxlen, i, str_len, wpad_len;
 	char *buf, *ptr;
 
-	if (fmtspec->width == WIDTH_ASTERISK)
+	if (fmtspec->width == WIDTH_ASTERISK) {
 		fmtspec->width = va_arg(ap, int);
-	if (fmtspec->precision == PRECISION_ASTERISK)
+		if (fmtspec->width < 0)
+			fmtspec->width = -fmtspec->width;
+	}
+	if (fmtspec->precision == PRECISION_ASTERISK) {
 		fmtspec->precision = va_arg(ap, int);
+		if (fmtspec->precision < 0)
+			fmtspec->precision = -fmtspec->precision;
+	}
 
 	buf = va_arg(ap, void*);
 	if (!buf)

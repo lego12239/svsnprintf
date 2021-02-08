@@ -2891,6 +2891,66 @@ test2_32(void)
 }
 
 int
+test2_32_1(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 20, "some%*.*dword", -7, 5, 12);
+	if (ret != 15)
+		TERR("ret must be 15 instead of %d", ret);
+	if (strcmp(buf, "some  00012word") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 16; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test2_32_2(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 20, "some%*.*dword", 7, -5, 12);
+	if (ret != 15)
+		TERR("ret must be 15 instead of %d", ret);
+	if (strcmp(buf, "some  00012word") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 16; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test2_32_3(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 20, "some%*.*dword", -7, -5, 12);
+	if (ret != 15)
+		TERR("ret must be 15 instead of %d", ret);
+	if (strcmp(buf, "some  00012word") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 16; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
 test3_0(void)
 {
 	int ret, i;
@@ -4197,6 +4257,66 @@ test7_13(void)
 }
 
 int
+test7_13_1(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 20, "some%*.*fword", -8, 4, 1.2);
+	if (ret != 16)
+		TERR("ret must be 16 instead of %d", ret);
+	if (strcmp(buf, "some  1.2000word") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 17; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test7_13_2(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 20, "some%*.*fword", 8, -4, 1.2);
+	if (ret != 16)
+		TERR("ret must be 16 instead of %d", ret);
+	if (strcmp(buf, "some  1.2000word") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 17; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test7_13_3(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 20, "some%*.*fword", -8, -4, 1.2);
+	if (ret != 16)
+		TERR("ret must be 16 instead of %d", ret);
+	if (strcmp(buf, "some  1.2000word") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 17; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
 test8_0(void)
 {
 	int ret, i;
@@ -4829,6 +4949,66 @@ test9_9(void)
 }
 
 int
+test9_9_1(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 20, "some%*.*sword", -2, 1, "Ab");
+	if (ret != 10)
+		TERR("ret must be 10 instead of %d", ret);
+	if (strcmp(buf, "some Aword") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 11; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test9_9_2(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 20, "some%*.*sword", 2, -1, "Ab");
+	if (ret != 10)
+		TERR("ret must be 10 instead of %d", ret);
+	if (strcmp(buf, "some Aword") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 11; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test9_9_3(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 20, "some%*.*sword", -2, -1, "Ab");
+	if (ret != 10)
+		TERR("ret must be 10 instead of %d", ret);
+	if (strcmp(buf, "some Aword") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 11; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
 test10_1(void)
 {
 	int ret, i;
@@ -5162,6 +5342,9 @@ struct test tests[] = {
 	{test2_31_3, "svsnprintf() with %.01*d"},
 	{test2_31_4, "svsnprintf() with %.*0d"},
 	{test2_32, "svsnprintf() with %*.*d"},
+	{test2_32_1, "svsnprintf() with %*.*d (<0)"},
+	{test2_32_2, "svsnprintf() with %*.*d (<0)"},
+	{test2_32_3, "svsnprintf() with %*.*d (<0)"},
 	{test3_0, "svsnprintf() with %-+6.4hho"},
 	{test3_1, "svsnprintf() with %-+6.4ho"},
 	{test3_2, "svsnprintf() with %-+6.4o"},
@@ -5228,6 +5411,9 @@ struct test tests[] = {
 	{test7_12_2, "svsnprintf() with %.0*f"},
 	{test7_12_3, "svsnprintf() with %.*0f"},
 	{test7_13, "svsnprintf() with %*.*f"},
+	{test7_13_1, "svsnprintf() with %*.*f(<0)"},
+	{test7_13_2, "svsnprintf() with %*.*f(<0)"},
+	{test7_13_3, "svsnprintf() with %*.*f(<0)"},
 	{test8_0, "svsnprintf() with %c"},
 	{test8_1, "svsnprintf() with %c(size=0)"},
 	{test9_0, "svsnprintf() with %s"},
@@ -5260,6 +5446,9 @@ struct test tests[] = {
 	{test9_8_3, "svsnprintf() with %.0*s"},
 	{test9_8_4, "svsnprintf() with %.*0s"},
 	{test9_9, "svsnprintf() with %*.*s"},
+	{test9_9_1, "svsnprintf() with %*.*s(<0)"},
+	{test9_9_2, "svsnprintf() with %*.*s(<0)"},
+	{test9_9_3, "svsnprintf() with %*.*s(<0)"},
 	{test10_1, "svsnprintf() with %p"},
 	{test11_0, "svsnprintf() with wrong spec (size=0)"},
 	{test11_1, "svsnprintf() with wrong spec (size=9)"},
