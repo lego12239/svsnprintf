@@ -4004,6 +4004,26 @@ test9_2(void)
 }
 
 int
+test9_2_1(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 100, "some%.0sword", "test");
+	if (ret != 8)
+		TERR("ret must be 8 instead of %d", ret);
+	if (strcmp(buf, "someword") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 9; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
 test9_3(void)
 {
 	int ret, i;
@@ -4791,6 +4811,7 @@ struct test tests[] = {
 	{test9_0, "svsnprintf() with %s"},
 	{test9_1, "svsnprintf() with %s(empty string)"},
 	{test9_2, "svsnprintf() with %.2s"},
+	{test9_2_1, "svsnprintf() with %.0s"},
 	{test9_3, "svsnprintf() with %4.2s"},
 	{test9_4, "svsnprintf() with %-4.2s"},
 	{test9_5, "svsnprintf() with %-4.2s(size=0)"},
