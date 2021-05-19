@@ -5209,6 +5209,65 @@ test12(void)
 	return 1;
 }
 
+int
+test13_0(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 20, "a%.db", 2);
+	if (ret != 3)
+		TERR("ret must be 3 instead of %d", ret);
+	if (strcmp(buf, "a2b") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 4; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test13_1(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 20, "a%.fb", 4.123);
+	if (ret != 3)
+		TERR("ret must be 3 instead of %d", ret);
+	if (strcmp(buf, "a4b") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 4; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test13_2(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 20, "a%.sb", "test");
+	if (ret != 2)
+		TERR("ret must be 3 instead of %d", ret);
+	if (strcmp(buf, "ab") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 3; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
 
 struct test tests[] = {
 	{test0_0, "_fmtspec_collect() with single %"},
@@ -5458,6 +5517,9 @@ struct test tests[] = {
 	{test11_5, "svsnprintf() with wrong spec (size=19)"},
 	{test11_6, "svsnprintf() with wrong spec"},
 	{test12, "fill a buffer"},
+	{test13_0, "svsnprintf() with %.d"},
+	{test13_1, "svsnprintf() with %.f"},
+	{test13_2, "svsnprintf() with %.s"},
 	TEST_NULL
 };
 
