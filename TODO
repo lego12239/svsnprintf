@@ -1,2 +1,6 @@
 - add test for empty fmt string for _fmtspec_collect().
 - add to every _fmtspec_collect test check for use_plus_sign == 0.
+- add j length modifier(for intmax_t and uintmax_t).
+- add z length modifier(for size_t and ssize_t).
+- add m conv spec(for strerror(errno) subst).
+- add M conv spec(for errstr_get() subst).
