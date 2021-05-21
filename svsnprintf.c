@@ -1,5 +1,5 @@
 /*
- * Version 1.0
+ * Version 1.1
  *
  * Copyright 2021 Oleg Nemanov <lego12239@yandex.ru>
  *
