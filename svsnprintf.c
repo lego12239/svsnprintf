@@ -432,6 +432,8 @@ conv_int(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 		if (fmtspec->precision < 0)
 			fmtspec->precision = -fmtspec->precision;
 	}
+	if (fmtspec->precision >= 0)
+		fmtspec->pad_type = pad_with_space;
 
 	switch (fmtspec->conv_spec) {
 	case conv_spec_d:
