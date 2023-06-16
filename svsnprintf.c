@@ -765,7 +765,7 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 				}
 			}
 			fpart_len--;
-		} while (num_fpart);
+		} while (fpart_len);
 		*str += off;
 	}
 
