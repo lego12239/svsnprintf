@@ -793,18 +793,27 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	/* An integer number part */
 	len += ipart_len;
 	off = 0;
-	do {
+	if (ipart_len == 0) {
+		len++;
 		if (*size) {
-			/* do not write digit if there is no empty space in str */
-			if (ipart_len <= *size) {
-				**str = buf[off];
-				*str += 1;
-				*size -= 1;
-				off++;
-			}
+			**str = '0';
+			*str += 1;
+			*size -= 1;
 		}
-		ipart_len--;
-	} while (ipart_len);
+	} else {
+		do {
+			if (*size) {
+				/* do not write digit if there is no empty space in str */
+				if (ipart_len <= *size) {
+					**str = buf[off];
+					*str += 1;
+					*size -= 1;
+					off++;
+				}
+			}
+			ipart_len--;
+		} while (ipart_len);
+	}
 
 	/* A fractional number part */
 	if (fpart_len) {
