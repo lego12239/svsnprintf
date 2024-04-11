@@ -636,7 +636,7 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	/* +1 and +1 - for safiness; + 1 - for \0 */
 	char buf[DBL_DIG + 1 + DBL_MAX_10_EXP + 1 + 1];
 	char *conv = "0123456789";
-	unsigned int digit, x, len = 0, buf_len, off, doff, is_msign = 0;
+	unsigned int digit, x, len = 0, off, doff, is_msign = 0;
 	int ipart_len = 0, fpart_len = 0, zpad_len = 0, wpad_len, i, exp;
 	int64_t val, val_copy;
 	double num;
@@ -672,14 +672,14 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 
 	/* Calculate a length of significand */
 	val_copy = val;
-	buf_len = 0;
+	len = 0;
 	do {
 		val_copy = val_copy / 10;
-		buf_len++;
+		len++;
 	} while (val_copy);
 
 	/* Convert a significand to string. */
-	off = doff = buf_len;
+	off = doff = len;
 	do {
 		digit = val % 10;
 		val = val / 10;
@@ -696,7 +696,7 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 			else
 				off = 0;
 			x = 0;
-			for (i = buf_len - 1; i >= 0; i--) {
+			for (i = len - 1; i >= 0; i--) {
 				x += (buf[i] - '0')*2;
 				buf[i+off] = x%10 + '0';
 				x = x/10;
@@ -704,22 +704,22 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 			if (off == 1) {
 				/* x%10 + '0' */
 				buf[0] = '1';
-				buf_len++;
+				len++;
 			}
 		}
-		doff = buf_len;
+		doff = len;
 	} else {
 		/* divide all digits by 2 */
 		for (; exp < 0; exp++) {
 			if (buf[0] == '1') {
 				x = buf[0] - '0';
 				off = 1;
-				buf_len--;
+				len--;
 				doff--;
 			} else {
 				x = off = 0;
 			}
-			for (i = 0; i < buf_len; i++) {
+			for (i = 0; i < len; i++) {
 				x = x*10 + buf[i + off] - '0';
 				buf[i] = x/2 + '0';
 				x = x%2;
@@ -727,11 +727,11 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 			if (x == 1) {
 				/* x*10 / 2 + '0' */
 				buf[i] = '5';
-				buf_len++;
+				len++;
 			}
 		}
 	}
-	buf[buf_len] = '\0';
+	buf[len] = '\0';
 
 	/* Format the value. */
 	/* Set integer and fractional parts length. */
@@ -758,6 +758,7 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 		break;
 	}
 
+	len = 0;
 	/* width padding */
 	if ((wpad_len > 0) && (!fmtspec->left_adjust)) {
 		len += wpad_len;
