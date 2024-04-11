@@ -36,6 +36,9 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stddef.h>
+#include <math.h>
+#include <inttypes.h>
+#include <float.h>
 
 #define WIDTH_ASTERISK -2
 #define PRECISION_ASTERISK -2
@@ -629,12 +632,20 @@ conv_int(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 static int
 conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 {
-	char *conv = "0123456789abcdef";
-	unsigned int digit, len = 0, off, is_msign = 0;
-	int ipart_len = 0, fpart_len = 0, rmult = 1, zpad_len = 0, wpad_len, i;
-	long long int num_ipart, num_fpart, num_copy;
+	assert((DBL_MAX_10_EXP > 0) && (DBL_MAX_10_EXP >= -DBL_MIN_10_EXP));
+	/* +1 and +1 - for safiness; + 1 - for \0 */
+	char buf[DBL_DIG + 1 + DBL_MAX_10_EXP + 1 + 1];
+	char *conv = "0123456789";
+	unsigned int digit, x, len = 0, buf_len, off, doff, is_msign = 0;
+	int ipart_len = 0, fpart_len = 0, zpad_len = 0, wpad_len, i, exp;
+	int64_t val, val_copy;
 	double num;
 	char pad_c;
+
+	assert(sizeof(double) == 8);
+	/* gcc -dM -E - <dev/null | grep FLT_RADIX */
+	assert(FLT_RADIX == 2);
+	assert(__DBL_MANT_DIG__ == 53);
 
 	if (fmtspec->width == WIDTH_ASTERISK) {
 		fmtspec->width = va_arg(ap, int);
@@ -647,35 +658,87 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 			fmtspec->precision = -fmtspec->precision;
 	}
 
-	/* separate a number to integer and fractional parts */
+	/* separate a number to significant and exponent parts.
+	 * original number = significand * 2^exp.
+	 */
 	num = (double)va_arg(ap, double);
+	num = frexp(num, &exp);
 	if (num < 0) {
 		is_msign = 1;
-		num *= -1;
+		num = -num;
 	}
-	num_ipart = (long long int)num;
-	num = num - num_ipart;
+	val = num * (((uint64_t)1)<<53);
+	exp -= 53;
 
+	/* Calculate a length of significand */
+	val_copy = val;
+	buf_len = 0;
+	do {
+		val_copy = val_copy / 10;
+		buf_len++;
+	} while (val_copy);
+
+	/* Convert a significand to string. */
+	off = doff = buf_len;
+	do {
+		digit = val % 10;
+		val = val / 10;
+		off--;
+		buf[off] = conv[digit];
+	} while (val);
+
+	/*  Apply an exponent. */
+	if (exp >= 0) {
+		/* multiply all digits by 2 */
+		for (; exp > 0; exp--) {
+			if (buf[0] >= '5')
+				off = 1;
+			else
+				off = 0;
+			x = 0;
+			for (i = buf_len - 1; i >= 0; i--) {
+				x += (buf[i] - '0')*2;
+				buf[i+off] = x%10 + '0';
+				x = x/10;
+			}
+			if (off == 1) {
+				/* x%10 + '0' */
+				buf[0] = '1';
+				buf_len++;
+			}
+		}
+		doff = buf_len;
+	} else {
+		/* divide all digits by 2 */
+		for (; exp < 0; exp++) {
+			if (buf[0] == '1') {
+				x = buf[0] - '0';
+				off = 1;
+				buf_len--;
+				doff--;
+			} else {
+				x = off = 0;
+			}
+			for (i = 0; i < buf_len; i++) {
+				x = x*10 + buf[i + off] - '0';
+				buf[i] = x/2 + '0';
+				x = x%2;
+			}
+			if (x == 1) {
+				/* x*10 / 2 + '0' */
+				buf[i] = '5';
+				buf_len++;
+			}
+		}
+	}
+	buf[buf_len] = '\0';
+
+	/* Format the value. */
+	/* Set integer and fractional parts length. */
+	ipart_len = doff;
 	fpart_len = fmtspec->precision;
 	if (fpart_len == -1)
 		fpart_len = 6;
-
-	/* round a number */
-	for(i = 0; i < fpart_len; i++)
-		rmult *= 10;
-	num += 0.5/rmult;
-
-	/* continue to separate a number to integer and fractional parts */
-	num_ipart += (int)num;
-	num -= (int)num;
-	num_fpart = (int)(num*rmult);
-
-	/* Calculate a length of a number */
-	num_copy = num_ipart;
-	do {
-		num_copy = num_copy / 10;
-		ipart_len++;
-	} while (num_copy);
 
 	/* Calculate paddings length */
 	wpad_len = fmtspec->width - ipart_len - fpart_len - (fpart_len ? 1 : 0) -
@@ -730,19 +793,17 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	len += ipart_len;
 	off = 0;
 	do {
-		digit = num_ipart % 10;
-		num_ipart = num_ipart / 10;
 		if (*size) {
 			/* do not write digit if there is no empty space in str */
 			if (ipart_len <= *size) {
-				*(*str + ipart_len - 1) = conv[digit];
-				off++;
+				**str = buf[off];
+				*str += 1;
 				*size -= 1;
+				off++;
 			}
 		}
 		ipart_len--;
-	} while (num_ipart);
-	*str += off;
+	} while (ipart_len);
 
 	/* A fractional number part */
 	if (fpart_len) {
@@ -752,21 +813,23 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 			*size -= 1;
 		}
 		len += fpart_len + 1;
-		off = 0;
+		off = doff;
 		do {
-			digit = num_fpart % 10;
-			num_fpart = num_fpart / 10;
 			if (*size) {
 				/* do not write digit if there is no empty space in str */
 				if (fpart_len <= *size) {
-					*(*str + fpart_len - 1) = conv[digit];
-					off++;
+					if (buf[off] != '\0') {
+						**str = buf[off];
+						off++;
+					} else {
+						**str = '0';
+					}
+					*str += 1;
 					*size -= 1;
 				}
 			}
 			fpart_len--;
 		} while (fpart_len);
-		*str += off;
 	}
 
 	/* width padding */
