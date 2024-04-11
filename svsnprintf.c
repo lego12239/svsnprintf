@@ -628,13 +628,16 @@ conv_int(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 
 	return len;
 }
-
+#include <stdio.h>
 static int
 conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 {
 	assert((DBL_MAX_10_EXP > 0) && (DBL_MAX_10_EXP >= -DBL_MIN_10_EXP));
-	/* +1 and +1 - for safiness; + 1 - for \0 */
-	char buf[DBL_DIG + 1 + DBL_MAX_10_EXP + 1 + 1];
+	/* +1 and +1 - for safiness
+	 * +1 - for \0
+	 * +1 - for round (first digit space)
+	 */
+	char __buf[DBL_DIG + 1 + DBL_MAX_10_EXP + 1 + 1 + 1], *buf;
 	char *conv = "0123456789";
 	unsigned int digit, x, len = 0, off, doff, is_msign = 0;
 	int ipart_len = 0, fpart_len = 0, zpad_len = 0, wpad_len, i, exp;
@@ -680,6 +683,7 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 
 	/* Convert a significand to string. */
 	off = doff = len;
+	buf = &__buf[1];
 	do {
 		digit = val % 10;
 		val = val / 10;
@@ -734,11 +738,34 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	buf[len] = '\0';
 
 	/* Format the value. */
-	/* Set integer and fractional parts length. */
-	ipart_len = doff;
+	/* Set fractional part length. */
 	fpart_len = fmtspec->precision;
 	if (fpart_len == -1)
 		fpart_len = 6;
+
+	/* Round the value */
+	off = doff + fpart_len;
+	if ((off < len) && (buf[off] >= '5')) {
+		x = 1;
+		while (off) {
+			off--;
+			if (buf[off] < '9') {
+				buf[off]++;
+				x = 0;
+				break;
+			}
+			buf[off] = '0';
+		}
+		/* Insert the leading digit if needed. */
+		if (x) {
+			buf = __buf;
+			buf[0] = '1';
+			doff++;
+		}
+	}
+
+	/* Set integer part length. */
+	ipart_len = doff;
 
 	/* Calculate paddings length */
 	wpad_len = fmtspec->width - ipart_len - fpart_len - (fpart_len ? 1 : 0) -
