@@ -1,6 +1,9 @@
 #ifndef __SVSNPRINTF_H__
 #define __SVSNPRINTF_H__
 
+#include <stdarg.h>
+#include <stddef.h>
+
 /*
  * snprintf() and vsnprintf() replacement.
  *  str - a destination buffer
