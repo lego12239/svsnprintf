@@ -48,6 +48,12 @@ enum pad_type {
 	pad_with_zero
 };
 
+enum sign_mode {
+	sign_mode_default = 0,
+	sign_mode_plus = 1,
+	sign_mode_space = 2
+};
+
 enum len_mod {
 	len_mod_none = 0,
 	len_mod_h = 1,
@@ -83,7 +89,7 @@ struct _fmtspec {
 	enum pad_type pad_type;
 	unsigned int alternate_form;
 	unsigned int left_adjust;
-	unsigned int use_plus_sign;
+	enum sign_mode sign_mode;
 	int width;  /* -2 - for * */
 	int precision;  /* -2 - for * */
 	enum len_mod len_mod;
@@ -224,7 +230,7 @@ _fmtspec_init(struct _fmtspec *fmtspec)
 	fmtspec->pad_type = 1;
 	fmtspec->alternate_form = 0;
 	fmtspec->left_adjust = 0;
-	fmtspec->use_plus_sign = 0;
+	fmtspec->sign_mode = 0;
 	fmtspec->width = 0;
 	fmtspec->precision = -1;
 	fmtspec->len_mod = 0;
@@ -269,8 +275,11 @@ _fmtspec_collect(const char *fmt, struct _fmtspec *fmtspec)
 				fmtspec->pad_type = pad_with_space;
 				break;
 			case ' ':
+				if (fmtspec->sign_mode == sign_mode_default)
+					fmtspec->sign_mode = sign_mode_space;
+				break;
 			case '+':
-				fmtspec->use_plus_sign = 1;
+				fmtspec->sign_mode = sign_mode_plus;
 				break;
 			case '\'':
 			case 'I':
@@ -445,21 +454,21 @@ conv_int(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 		break;
 	case conv_spec_b:
 		base = 2;
-		fmtspec->use_plus_sign = 0;
+		fmtspec->sign_mode = sign_mode_default;
 		break;
 	case conv_spec_o:
 		base = 8;
-		fmtspec->use_plus_sign = 0;
+		fmtspec->sign_mode = sign_mode_default;
 		break;
 	case conv_spec_p:
 		fmtspec->alternate_form = 1;
 	case conv_spec_x:
 		base = 16;
-		fmtspec->use_plus_sign = 0;
+		fmtspec->sign_mode = sign_mode_default;
 		break;
 	case conv_spec_X:
 		base = 16;
-		fmtspec->use_plus_sign = 0;
+		fmtspec->sign_mode = sign_mode_default;
 		conv = "0123456789ABCDEF";
 		break;
 	default:
@@ -534,7 +543,7 @@ conv_int(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	if (ppad_len < 0)
 		ppad_len = 0;
 	wpad_len = fmtspec->width - num_len -
-	  (is_msign || fmtspec->use_plus_sign) - ppad_len;
+	  (is_msign || fmtspec->sign_mode ? 1 : 0) - ppad_len;
 	if (wpad_len < 0)
 		wpad_len = 0;
 	/* Convert a wpad to ppad if pad_type is pad_with_zero */
@@ -565,9 +574,20 @@ conv_int(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 			*size -= 1;
 		}
 		len++;
-	} else if (fmtspec->use_plus_sign) {
+	} else if (fmtspec->sign_mode) {
 		if (*size) {
-			**str = '+';
+			switch (fmtspec->sign_mode) {
+			case sign_mode_plus:
+				**str = '+';
+				break;
+			case sign_mode_space:
+				**str = ' ';
+				break;
+			default:
+				__str = "svsnprintf: conv_int error: unknown sign_mode";
+				write(2, __str, strlen(__str));
+				exit(1);
+			}
 			*str += 1;
 			*size -= 1;
 		}
@@ -637,7 +657,7 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	 * +1 - for \0
 	 * +1 - for round (first digit space)
 	 */
-	char __buf[DBL_DIG + 1 + DBL_MAX_10_EXP + 1 + 1 + 1], *buf;
+	char __buf[DBL_DIG + 1 + DBL_MAX_10_EXP + 1 + 1 + 1], *buf, *__str;
 	char *conv = "0123456789";
 	unsigned int digit, x, len = 0, off, doff, is_msign = 0;
 	int ipart_len = 0, fpart_len = 0, zpad_len = 0, wpad_len, i, exp;
@@ -769,7 +789,7 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 
 	/* Calculate paddings length */
 	wpad_len = fmtspec->width - ipart_len - fpart_len - (fpart_len ? 1 : 0) -
-	  (is_msign || fmtspec->use_plus_sign);
+	  (is_msign || fmtspec->sign_mode ? 1 : 0);
 	if (wpad_len < 0)
 		wpad_len = 0;
 	/* Convert a wpad to ppad if pad_type is pad_with_zero */
@@ -801,9 +821,21 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 			*size -= 1;
 		}
 		len++;
-	} else if (fmtspec->use_plus_sign) {
+	} else if (fmtspec->sign_mode != sign_mode_default) {
 		if (*size) {
-			**str = '+';
+			switch (fmtspec->sign_mode) {
+			case sign_mode_plus:
+				**str = '+';
+				break;
+			case sign_mode_space:
+				**str = ' ';
+				break;
+			default:
+				__str = "svsnprintf: conv_double error: unknown sign_mode";
+				write(2, __str, strlen(__str));
+				exit(1);
+				break;
+			}
 			*str += 1;
 			*size -= 1;
 		}
