@@ -2448,6 +2448,106 @@ test2_27_11(void)
 }
 
 int
+test2_27_20(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 100, "some%07dword", 123);
+	if (ret != 15)
+		TERR("ret must be 15 instead of %d", ret);
+	if (strcmp(buf, "some0000123word") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 16; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test2_27_21(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 100, "some%+07dword", 123);
+	if (ret != 15)
+		TERR("ret must be 15 instead of %d", ret);
+	if (strcmp(buf, "some+000123word") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 16; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test2_27_22(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 100, "some% 07dword", 123);
+	if (ret != 15)
+		TERR("ret must be 15 instead of %d", ret);
+	if (strcmp(buf, "some 000123word") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 16; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test2_27_23(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 100, "some% +07dword", 123);
+	if (ret != 15)
+		TERR("ret must be 15 instead of %d", ret);
+	if (strcmp(buf, "some+000123word") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 16; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
+test2_27_24(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 100, "some%+ 07dword", 123);
+	if (ret != 15)
+		TERR("ret must be 15 instead of %d", ret);
+	if (strcmp(buf, "some+000123word") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 16; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
 test2_28(void)
 {
 	int ret, i;
@@ -5748,6 +5848,11 @@ struct test tests[] = {
 	{test2_27_9, "svsnprintf() with %-+4.5hhd"},
 	{test2_27_10, "svsnprintf() with %-+6.4hhd(<0)"},
 	{test2_27_11, "svsnprintf() with %-+4.5hhd(<0)"},
+	{test2_27_20, "svsnprintf() with %07d(123)"},
+	{test2_27_21, "svsnprintf() with %+07d(123)"},
+	{test2_27_22, "svsnprintf() with % 07d(123)"},
+	{test2_27_23, "svsnprintf() with % +07d(123)"},
+	{test2_27_24, "svsnprintf() with %+ 07d(123)"},
 	{test2_28, "svsnprintf() with %-+4.5hhd(<0, size=0)"},
 	{test2_29_0, "svsnprintf() with %+6.4hhd(size=3)"},
 	{test2_29_1, "svsnprintf() with %+6.4hhd(size=5)"},
