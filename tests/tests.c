@@ -3714,6 +3714,26 @@ test7_0_7(void)
 }
 
 int
+test7_0a(void)
+{
+	int ret, i;
+	char buf[1024];
+
+	for(i = 0; i < 1024; i++)
+		buf[i] = 1;
+	ret = ssnprintf(buf, 6, "a%03.0fb", 0.123);
+	if (ret != 5)
+		TERR("ret must be 5 instead of %d", ret);
+	if (strcmp(buf, "a000b") != 0)
+		TERR("result is wrong: '%s'", buf);
+	for(i = 6; i < 1024; i++)
+		if (buf[i] != 1)
+			TERR("buf[%d] is %d", i, buf[i]);
+
+	return 1;
+}
+
+int
 test7_1(void)
 {
 	int ret, i;
@@ -5913,6 +5933,7 @@ struct test tests[] = {
 	{test7_0_5, "svsnprintf() with %f (buf too small, 4)"},
 	{test7_0_6, "svsnprintf() with %f (buf too small, 5)"},
 	{test7_0_7, "svsnprintf() with %f (buf too small, 6)"},
+	{test7_0a, "svsnprintf() with %3.0f (0.123)"},
 	{test7_1, "svsnprintf() with %.0f"},
 	{test7_2, "svsnprintf() with %.1f"},
 	{test7_3, "svsnprintf() with %.2f"},
