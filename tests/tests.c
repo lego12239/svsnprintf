@@ -5761,6 +5761,7 @@ struct test tests[] = {
 	{test0_11, "_fmtspec_collect() with %0d"},
 	{test0_12, "_fmtspec_collect() with %+d"},
 	{test0_13, "_fmtspec_collect() with %+0d"},
+	{test0_13_1, "_fmtspec_collect() with % 0d"},
 	{test0_14, "_fmtspec_collect() with %-d"},
 	{test0_15, "_fmtspec_collect() with %-0d"},
 	{test0_16, "_fmtspec_collect() with %-+0d"},
