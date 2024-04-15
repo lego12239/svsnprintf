@@ -754,6 +754,7 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 				buf[i] = '5';
 				len++;
 			}
+//printf("exp: %d: %d, %.*s\n", exp, doff, len, buf);
 		}
 	}
 	buf[len] = '\0';
