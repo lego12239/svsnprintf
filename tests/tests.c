@@ -545,8 +545,8 @@ test0_12(void)
 	if (fmtspec.conv_fun != conv_int)
 		TERR("conv_fun must be %p instead of %p",
 		  conv_int, fmtspec.conv_fun);
-	if (fmtspec.use_plus_sign != 1)
-		TERR("use_plus_sign must be 1 instead of %p", fmtspec.use_plus_sign);
+	if (fmtspec.sign_mode != 1)
+		TERR("sign_mode must be 1 instead of %p", fmtspec.sign_mode);
 
 	return 1;
 }
@@ -576,8 +576,39 @@ test0_13(void)
 	if (fmtspec.conv_fun != conv_int)
 		TERR("conv_fun must be %p instead of %p",
 		  conv_int, fmtspec.conv_fun);
-	if (fmtspec.use_plus_sign != 1)
-		TERR("use_plus_sign must be 1 instead of %p", fmtspec.use_plus_sign);
+	if (fmtspec.sign_mode != 1)
+		TERR("sign_mode must be 1 instead of %p", fmtspec.sign_mode);
+
+	return 1;
+}
+
+int
+test0_13_1(void)
+{
+	int ret;
+	struct _fmtspec fmtspec = FMTSPEC_INITIAL;
+
+	ret = _fmtspec_collect("% 0d", &fmtspec);
+	if (ret != 4)
+		TERR("ret must be 4 instead of %d", ret);
+	if (fmtspec.pad_type != pad_with_zero)
+		TERR("pad_type must be %d instead of %d",
+		  pad_with_zero, fmtspec.pad_type);
+	if (fmtspec.width != 0)
+		TERR("width must be 0 instead of %d", fmtspec.width);
+	if (fmtspec.precision != -1)
+		TERR("precision must be -1 instead of %d", fmtspec.precision);
+	if (fmtspec.len_mod != len_mod_none)
+		TERR("len_mod must be %d instead of %d",
+		  len_mod_none, fmtspec.len_mod);
+	if (fmtspec.conv_spec != conv_spec_d)
+		TERR("conv_spec must be %d instead of %d",
+		  conv_spec_d, fmtspec.conv_spec);
+	if (fmtspec.conv_fun != conv_int)
+		TERR("conv_fun must be %p instead of %p",
+		  conv_int, fmtspec.conv_fun);
+	if (fmtspec.sign_mode != 2)
+		TERR("sign_mode must be 2 instead of %p", fmtspec.sign_mode);
 
 	return 1;
 }
@@ -609,8 +640,8 @@ test0_14(void)
 	if (fmtspec.conv_fun != conv_int)
 		TERR("conv_fun must be %p instead of %p",
 		  conv_int, fmtspec.conv_fun);
-	if (fmtspec.use_plus_sign != 0)
-		TERR("use_plus_sign must be 0 instead of %p", fmtspec.use_plus_sign);
+	if (fmtspec.sign_mode != 0)
+		TERR("sign_mode must be 0 instead of %p", fmtspec.sign_mode);
 
 	return 1;
 }
@@ -642,8 +673,8 @@ test0_15(void)
 	if (fmtspec.conv_fun != conv_int)
 		TERR("conv_fun must be %p instead of %p",
 		  conv_int, fmtspec.conv_fun);
-	if (fmtspec.use_plus_sign != 0)
-		TERR("use_plus_sign must be 0 instead of %p", fmtspec.use_plus_sign);
+	if (fmtspec.sign_mode != 0)
+		TERR("sign_mode must be 0 instead of %p", fmtspec.sign_mode);
 
 	return 1;
 }
@@ -675,8 +706,8 @@ test0_16(void)
 	if (fmtspec.conv_fun != conv_int)
 		TERR("conv_fun must be %p instead of %p",
 		  conv_int, fmtspec.conv_fun);
-	if (fmtspec.use_plus_sign != 1)
-		TERR("use_plus_sign must be 1 instead of %p", fmtspec.use_plus_sign);
+	if (fmtspec.sign_mode != 1)
+		TERR("sign_mode must be 1 instead of %p", fmtspec.sign_mode);
 
 	return 1;
 }
@@ -708,8 +739,8 @@ test0_17(void)
 	if (fmtspec.conv_fun != conv_int)
 		TERR("conv_fun must be %p instead of %p",
 		  conv_int, fmtspec.conv_fun);
-	if (fmtspec.use_plus_sign != 0)
-		TERR("use_plus_sign must be 0 instead of %p", fmtspec.use_plus_sign);
+	if (fmtspec.sign_mode != 0)
+		TERR("sign_mode must be 0 instead of %p", fmtspec.sign_mode);
 
 	return 1;
 }
@@ -744,8 +775,8 @@ test0_18(void)
 	if (fmtspec.conv_fun != conv_int)
 		TERR("conv_fun must be %p instead of %p",
 		  conv_int, fmtspec.conv_fun);
-	if (fmtspec.use_plus_sign != 0)
-		TERR("use_plus_sign must be 0 instead of %p", fmtspec.use_plus_sign);
+	if (fmtspec.sign_mode != 0)
+		TERR("sign_mode must be 0 instead of %p", fmtspec.sign_mode);
 
 	return 1;
 }
@@ -781,8 +812,8 @@ test0_19(void)
 	if (fmtspec.conv_fun != conv_int)
 		TERR("conv_fun must be %p instead of %p",
 		  conv_int, fmtspec.conv_fun);
-	if (fmtspec.use_plus_sign != 0)
-		TERR("use_plus_sign must be 0 instead of %p", fmtspec.use_plus_sign);
+	if (fmtspec.sign_mode != 0)
+		TERR("sign_mode must be 0 instead of %p", fmtspec.sign_mode);
 
 	return 1;
 }
@@ -818,8 +849,8 @@ test0_20(void)
 	if (fmtspec.conv_fun != conv_int)
 		TERR("conv_fun must be %p instead of %p",
 		  conv_int, fmtspec.conv_fun);
-	if (fmtspec.use_plus_sign != 0)
-		TERR("use_plus_sign must be 0 instead of %p", fmtspec.use_plus_sign);
+	if (fmtspec.sign_mode != 0)
+		TERR("sign_mode must be 0 instead of %p", fmtspec.sign_mode);
 
 	return 1;
 }
@@ -856,8 +887,8 @@ test0_21(void)
 	if (fmtspec.conv_fun != conv_int)
 		TERR("conv_fun must be %p instead of %p",
 		  conv_int, fmtspec.conv_fun);
-	if (fmtspec.use_plus_sign != 0)
-		TERR("use_plus_sign must be 0 instead of %p", fmtspec.use_plus_sign);
+	if (fmtspec.sign_mode != 0)
+		TERR("sign_mode must be 0 instead of %p", fmtspec.sign_mode);
 
 	return 1;
 }
