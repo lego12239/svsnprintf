@@ -659,8 +659,9 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	 */
 	char __buf[DBL_DIG + 1 + DBL_MAX_10_EXP + 1 + 1 + 1], *buf, *__str;
 	char *conv = "0123456789";
-	unsigned int digit, x, len = 0, off, doff, is_msign = 0;
-	int ipart_len = 0, fpart_len = 0, zpad_len = 0, wpad_len, i, exp;
+	unsigned int digit, x, len = 0, is_msign = 0;
+	int ipart_len = 0, off, doff, fpart_len = 0, zpad_len = 0, wpad_len,
+	    i, exp;
 	int64_t val, val_copy;
 	double num;
 	char pad_c;
@@ -765,7 +766,7 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 
 	/* Round the value */
 	off = doff + fpart_len;
-	if ((off < len) && (buf[off] >= '5')) {
+	if ((off >= 0) && (off < len) && (buf[off] >= '5')) {
 		x = 1;
 		while (off) {
 			off--;
@@ -788,8 +789,8 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	ipart_len = doff;
 
 	/* Calculate paddings length */
-	wpad_len = fmtspec->width - (ipart_len ? ipart_len : 1) - fpart_len - (fpart_len ? 1 : 0) -
-	  (is_msign || fmtspec->sign_mode ? 1 : 0);
+	wpad_len = fmtspec->width - (ipart_len > 0 ? ipart_len : 1) - fpart_len -
+	  (fpart_len ? 1 : 0) - (is_msign || fmtspec->sign_mode ? 1 : 0);
 	if (wpad_len < 0)
 		wpad_len = 0;
 	/* Convert a wpad to ppad if pad_type is pad_with_zero */
@@ -850,10 +851,9 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	}
 
 	/* An integer number part */
-	len += ipart_len;
+	len += ipart_len > 0 ? ipart_len : 1;
 	off = 0;
-	if (ipart_len == 0) {
-		len++;
+	if (ipart_len <= 0) {
 		if (*size) {
 			**str = '0';
 			*str += 1;
@@ -882,23 +882,41 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 			*size -= 1;
 		}
 		len += fpart_len + 1;
-		off = doff;
-		do {
+		/* Too small value. Place zeroes before significand.*/
+		if (doff < 0) {
 			if (*size) {
-				/* do not write digit if there is no empty space in str */
-				if (fpart_len <= *size) {
-					if (buf[off] != '\0') {
-						**str = buf[off];
-						off++;
-					} else {
-						**str = '0';
-					}
-					*str += 1;
-					*size -= 1;
-				}
+				doff = -doff;
+				doff = fpart_len < doff ? fpart_len : doff;
+				if (doff <= *size)
+					x = doff;
+				else
+					x = *size;
+				memset(*str, '0', x);
+				*str += x;
+				*size -= x;
 			}
-			fpart_len--;
-		} while (fpart_len);
+			fpart_len -= doff;
+			doff = 0;
+		}
+		off = doff;
+		if (fpart_len) {
+			do {
+				if (*size) {
+					/* do not write digit if there is no empty space in str */
+					if (fpart_len <= *size) {
+						if (buf[off] != '\0') {
+							**str = buf[off];
+							off++;
+						} else {
+							**str = '0';
+						}
+						*str += 1;
+						*size -= 1;
+					}
+				}
+				fpart_len--;
+			} while (fpart_len);
+		}
 	}
 
 	/* width padding */
