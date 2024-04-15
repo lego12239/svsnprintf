@@ -472,7 +472,7 @@ conv_int(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 		conv = "0123456789ABCDEF";
 		break;
 	default:
-		__str = "conv_int: wrong fmtspec->conv_spec\n";
+		__str = "svsnprintf: conv_int error: wrong fmtspec->conv_spec\n";
 //		write(2, __str, 35);
 		write(2, __str, strlen(__str));
 		exit(1);
