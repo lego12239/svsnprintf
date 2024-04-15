@@ -788,7 +788,7 @@ conv_double(char **str, size_t *size, struct _fmtspec *fmtspec, va_list ap)
 	ipart_len = doff;
 
 	/* Calculate paddings length */
-	wpad_len = fmtspec->width - ipart_len - fpart_len - (fpart_len ? 1 : 0) -
+	wpad_len = fmtspec->width - (ipart_len ? ipart_len : 1) - fpart_len - (fpart_len ? 1 : 0) -
 	  (is_msign || fmtspec->sign_mode ? 1 : 0);
 	if (wpad_len < 0)
 		wpad_len = 0;
