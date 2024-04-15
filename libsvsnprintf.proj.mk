@@ -4,6 +4,9 @@ SOURCES := svsnprintf.c
 
 include .proj.mk/c-proj.mk
 
+bench: bench.c $(SOURCES)
+	$(CC) -o $@ bench.c
+
 install: $(TARGET)
 	install -d $(D)/lib $(D)/include
 	install -m 0444 $(TARGET) $(D)/lib
