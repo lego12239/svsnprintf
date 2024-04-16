@@ -32,6 +32,7 @@ main(int argc, char **argv)
 		exit(1);
 	}
 
+	printf("svsnprintf: ");
 	f = 1.002121970718271e+05;
 	gettimeofday(&tv1, NULL);
 	for (i = 0; i < cnt; i++) {
@@ -46,6 +47,23 @@ main(int argc, char **argv)
 		s--;
 		us = 1000000 - us;
 	}
-	printf("%u float converstion during %u.%u seconds\n", cnt, s, us);
+	printf("%u %%f formatting during %u.%u seconds\n", cnt, s, us);
+
+	printf("printf: ");
+	f = 1.002121970718271e+05;
+	gettimeofday(&tv1, NULL);
+	for (i = 0; i < cnt; i++) {
+		snprintf(buf, 1024, "%f\n", f);
+		i++;
+		f += i;
+	}
+	gettimeofday(&tv2, NULL);
+	s = tv2.tv_sec - tv1.tv_sec;
+	us = tv2.tv_usec - tv1.tv_usec;
+	if (us < 0) {
+		s--;
+		us = 1000000 - us;
+	}
+	printf("%u %%f formatting during %u.%u seconds\n", cnt, s, us);
 }
 
