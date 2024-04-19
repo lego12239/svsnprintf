@@ -6055,5 +6055,5 @@ main(int argc, char **argv)
 	}
 
 	printf("TOTAL %d/%d\n", cnt, total);
-	return 0;
+	return cnt == total ? 0 : 1;
 }
